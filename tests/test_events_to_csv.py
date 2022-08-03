@@ -27,6 +27,11 @@ def test_read_time():
 
 def test_RemLogic_to_pandas():
     path = "data/gold_labels/2022 CONCORDANCE-1-Events 7-feb-2022.txt"
+    try:
+        assert os.path.isfile(path)
+    except:
+        pytest.skip("no data for this test, skipping")
+
     stime = datetime(2022,2,7,23,30,9)
     l,t = events_to_csv.RemLogic_to_pandas(path)
     assert len(l) > 10
