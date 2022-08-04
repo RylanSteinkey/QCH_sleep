@@ -141,10 +141,10 @@ def RemLogic_to_pandas(file_path):
                     rtime = line.rstrip().split('\t')[1]
                 else:
                     raise Exception("number of columns was unexpected")
-                events.append(line.split(' ')[0])
+                events.append(line.split('\t')[0])
                 time = read_time([rdate, rtime])
             elif i>20:
-                events.append(line.split(' ')[0])
+                events.append(line.split('\t')[0])
             else:
                 pass #skips the initial garbage
     return pd.Series(events), time
@@ -163,7 +163,7 @@ def add_gold_stds(files, usleep, out):
         u_time = df['U-Sleep_epoch_start'][0]
         u_time = datetime.datetime.strptime(u_time, '%c')
         events, stime = RemLogic_to_pandas(file[0])
-        print(len(events))
+        #print(len(events))
 
         time_diff = stime-u_time
 
