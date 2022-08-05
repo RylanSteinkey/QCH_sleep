@@ -1,5 +1,9 @@
 import pytest
 import os, sys
+
+import pandas as pd
+import numpy as np
+
 from datetime import datetime
 
 from qchsleep import events_to_csv

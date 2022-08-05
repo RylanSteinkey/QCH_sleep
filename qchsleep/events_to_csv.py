@@ -172,7 +172,7 @@ def add_gold_stds(files, usleep, out):
 
         cells_to_skip = secs//30
 
-        if secs % 30 >=15:
+        if secs % 30 >15:
             cells_to_skip +=1
 
         pad_after = len(df.index) - cells_to_skip - len(events)

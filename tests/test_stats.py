@@ -39,3 +39,36 @@ def test_ck_rep():
 
     for i,j in zip(fake_rc, ['SLEEP-REM', 'SLEEP-REM', 'SLEEP-S1', 'SLEEP-S2', 'SLEEP-S2']):
         assert i == j
+
+def test_is_equal():
+    # pure
+    assert stats.is_equal("WAKE","SLEEP-S0","pure")
+    assert stats.is_equal("N1","SLEEP-S1","pure")
+    assert stats.is_equal("N2","SLEEP-S2","pure")
+    assert stats.is_equal("N3","SLEEP-S3","pure")
+    assert stats.is_equal("REM","SLEEP-REM","pure")
+
+    # merge nrem
+    assert not stats.is_equal("REM","SLEEP-S3","non_REM_merge")
+    assert not stats.is_equal("WAKE","SLEEP-S1","non_REM_merge")
+    assert stats.is_equal("N1","SLEEP-S1","non_REM_merge")
+    assert stats.is_equal("N1","SLEEP-S2","non_REM_merge")
+    assert stats.is_equal("N1","SLEEP-S3","non_REM_merge")
+    assert not stats.is_equal("N1","SLEEP-S0","non_REM_merge")
+    assert not stats.is_equal("N1","SLEEP-REM","non_REM_merge")
+
+    # wake_sleep
+    assert stats.is_equal("WAKE","SLEEP-S0","wake_sleep")
+    assert not stats.is_equal("N1","SLEEP-S0","wake_sleep")
+    assert stats.is_equal("N1","SLEEP-REM","wake_sleep")
+
+
+def test_grade():
+    df = pd.DataFrame()
+    df['C4'] = ['WAKE','WAKE',"N1","N2","N3","REM","WAKE","WAKE"]
+    df['F4'] = ['WAKE','WAKE',"N1","N1","REM","REM","WAKE","WAKE"]
+    df['O2'] = ['WAKE','WAKE',"WAKE","N2","N2","N2","WAKE","WAKE"]
+    df['gold_std'] = ['','','SLEEP-S1','SLEEP-S1','SLEEP-S2','SLEEP-REM','SLEEP-S0','']
+
+    sim, ck = stats.grade(df)
+    assert values

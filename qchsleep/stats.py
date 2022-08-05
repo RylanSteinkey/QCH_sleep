@@ -5,7 +5,7 @@ import numpy as np
 
 from sklearn.metrics import cohen_kappa_score
 
-date_groups = ['7-feb-2022','9-oct-2018','30-may-2018','2-may-2018','18-feb-2021']
+date_groups = ['30-may-2018','7-feb-2022','9-oct-2018','2-may-2018','18-feb-2021']
 
 def converter(vals):
     """
@@ -106,6 +106,15 @@ def grade(df):
         cohen_kappa_results = []
         for sim_test in ['pure', 'non_REM_merge', 'wake_sleep']:
             sim = np.sum([is_equal(i,j,sim_test) for i,j in zip(lc,rc)])/len(lc)
+            assert len(lc)==len(rc)
+
+            # error testing
+            """
+            if lead == 'F4' and sim_test == 'pure':
+                np.save('data/test_lc.npy', lc)
+                np.save('data/test_rc.npy', rc)
+                sys.exit()
+            """
 
             fake_rc = ck_prep(lc, rc, sim_test)
 
@@ -117,7 +126,7 @@ def grade(df):
         ck_df[lead] = cohen_kappa_results
     return sim_df, ck_df
 
-def simularities():
+def similarities():
     """
     Reads in the prediction tables, prints % simularity and cohen_kappa_score
     """
@@ -128,7 +137,7 @@ def simularities():
         sim_df, ck_df = grade(df)
 
         print(date_group)
-        print("Simularity")
+        print("Similarity")
         print(sim_df)
         print("\nCohen's Kappa")
         print(ck_df)
@@ -140,7 +149,7 @@ def u_vs_q(out):
     Runs all the relevant stats required for the
     usleep vs qsleep comparison
     """
-    simularities()
+    similarities()
 
 
 if __name__ == "__main__":
