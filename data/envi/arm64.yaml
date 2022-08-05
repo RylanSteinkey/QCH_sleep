@@ -1,5 +1,6 @@
 name: zarm64
 channels:
+  - conda-forge
   - defaults
 dependencies:
   - appnope=0.1.2=py310hca03da5_1001
@@ -14,6 +15,7 @@ dependencies:
   - certifi=2022.6.15=py310hca03da5_0
   - cycler=0.11.0=pyhd3eb1b0_0
   - decorator=5.1.1=pyhd3eb1b0_0
+  - et_xmlfile=1.0.1=py_1001
   - executing=0.8.3=pyhd3eb1b0_0
   - fonttools=4.25.0=pyhd3eb1b0_0
   - freetype=2.11.0=h1192e45_0
@@ -21,6 +23,7 @@ dependencies:
   - iniconfig=1.1.1=pyhd3eb1b0_0
   - ipython=8.4.0=py310hca03da5_0
   - jedi=0.18.1=py310hca03da5_1
+  - joblib=1.1.0=pyhd8ed1ab_0
   - jpeg=9e=h1a28f6b_0
   - kiwisolver=1.4.2=py310hc377ac9_0
   - lcms2=2.12=hba8e193_0
@@ -43,6 +46,7 @@ dependencies:
   - numexpr=2.8.3=py310h5a06f4b_0
   - numpy=1.23.1=py310h220015d_0
   - numpy-base=1.23.1=py310h742c864_0
+  - openpyxl=3.0.9=pyhd8ed1ab_0
   - openssl=1.1.1q=h1a28f6b_0
   - packaging=21.3=pyhd3eb1b0_0
   - pandas=1.4.3=py310hc377ac9_0
@@ -63,12 +67,14 @@ dependencies:
   - python-dateutil=2.8.2=pyhd3eb1b0_0
   - pytz=2022.1=py310hca03da5_0
   - readline=8.1.2=h1a28f6b_1
+  - scikit-learn=1.1.1=py310hc377ac9_0
   - scipy=1.7.3=py310h3c8eff0_0
   - seaborn=0.11.2=pyhd3eb1b0_0
   - setuptools=61.2.0=py310hca03da5_0
   - six=1.16.0=pyhd3eb1b0_1
   - sqlite=3.39.0=h1058600_0
   - stack_data=0.2.0=pyhd3eb1b0_0
+  - threadpoolctl=3.1.0=pyh8a188c0_0
   - tk=8.6.12=hb8d0fd4_0
   - tomli=2.0.1=py310hca03da5_0
   - tornado=6.1=py310h1a28f6b_0
@@ -76,6 +82,7 @@ dependencies:
   - tzdata=2022a=hda174b7_0
   - wcwidth=0.2.5=pyhd3eb1b0_0
   - wheel=0.37.1=pyhd3eb1b0_0
+  - xlsxwriter=3.0.3=pyhd3eb1b0_0
   - xz=5.2.5=h1a28f6b_1
   - zlib=1.2.12=h5a0b063_2
   - zstd=1.5.2=h8574219_0

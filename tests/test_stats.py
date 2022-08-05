@@ -70,5 +70,5 @@ def test_grade():
     df['O2'] = ['WAKE','WAKE',"WAKE","N2","N2","N2","WAKE","WAKE"]
     df['gold_std'] = ['','','SLEEP-S1','SLEEP-S1','SLEEP-S2','SLEEP-REM','SLEEP-S0','']
 
-    sim, ck = stats.grade(df)
+    sim, ck = stats.grade(df, 'test')
     assert values

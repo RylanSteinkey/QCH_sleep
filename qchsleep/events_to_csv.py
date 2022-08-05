@@ -78,24 +78,30 @@ def U_Sleep(files, out):
         for EEG_lead in date_group:
             events = []
             with open(EEG_lead) as file:
-                for line_number, line in enumerate(file):
-                    line = line.rstrip()
-                    if line_number == 0:
-                        try:
-                            assert line == 'EPOCH=30.0s'
-                        except:
-                            raise Exception("Epoch not set to 30s")
-                    elif line_number == 1:
-                        time_stamp = read_time(line)
-                        if last_timestamp == 'empty':
-                            last_timestamp = time_stamp
-                        else:
+                try:
+
+                    for line_number, line in enumerate(file):
+                        line = line.rstrip()
+                        if line_number == 0:
                             try:
-                                assert last_timestamp == time_stamp
+                                assert line == 'EPOCH=30.0s'
                             except:
-                                raise Exception("starting timestamps dont match for 2 of the same EEG leads")
-                    else:
-                        events.append(line)
+                                raise Exception("Epoch not set to 30s")
+                        elif line_number == 1:
+                            time_stamp = read_time(line)
+                            if last_timestamp == 'empty':
+                                last_timestamp = time_stamp
+                            else:
+                                try:
+                                    assert last_timestamp == time_stamp
+                                except:
+                                    raise Exception("starting timestamps dont match for 2 of the same EEG leads")
+                        else:
+                            events.append(line)
+
+                except:
+                    print("Error when reading file {}".format(file))
+                    raise
             eeg = EEG_lead.split(' ')[-1].split('/')[0]
             df[eeg] = pd.Series(events)
         times = []
