@@ -7,7 +7,7 @@ from sklearn.metrics import cohen_kappa_score
 
 date_groups = ['30-may-2018','7-feb-2022','9-oct-2018','2-may-2018','18-feb-2021', '3-mar-2015']
 
-expected_supports = {'30-may-2018':200,'7-feb-2022':200,'9-oct-2018':229,'2-may-2018':272,'18-feb-2021':241,'3-mar-2015':218}
+expected_supports = {'30-may-2018':200,'7-feb-2022':200,'9-oct-2018':229,'2-may-2018':272,'18-feb-2021':241,'3-mar-2015':218, 'test':8}
 
 def converter(vals):
     """
@@ -100,8 +100,13 @@ def grade(df, date_group):
         rc = rc[[not is_empty(i) for i in rc]]
 
         try:
+            print(len(lc),expected_supports[date_group])
+
+            print('1')
             assert np.all([i==j for i,j in zip(lc.index,rc.index)])
+            print('2')
             assert len(lc)==len(rc)
+            print('3')
             assert len(lc) == expected_supports[date_group]
         except:
             raise Exception("indeces not matching for comparison")

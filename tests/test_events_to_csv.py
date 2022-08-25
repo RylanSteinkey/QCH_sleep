@@ -16,8 +16,8 @@ def test_get_files_list():
         pytest.skip("no data for this test, skipping")
     files = events_to_csv.get_files_list(path)
 
-    # we expect 5 clusters with 3 files each
-    assert len(files) == 5
+    # we expect 6 clusters with 3 files each
+    assert len(files) == 6
     for f in files:
         assert len(f) == 3
 
