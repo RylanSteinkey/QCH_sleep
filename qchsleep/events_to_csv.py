@@ -123,6 +123,7 @@ def RemLogic_to_pandas(file_path):
     turns it into a pandas series at the correct time
     """
     events = []
+    early_start = False
     with open(file_path) as file:
         for i, line in enumerate(file):
             # skip the first 19 lines, but record date on line 3
@@ -130,12 +131,20 @@ def RemLogic_to_pandas(file_path):
             if i == 3:
                 rdate = line.rstrip().split('\t')[-1]
             # double check the date starts here
-            elif i == 19:
+
+            elif i == 15:
+                if line[:15] == 'Time [hh:mm:ss]':
+                    # This means the scoring start earlier
+                    # skipping the scoring session info, also
+                    # most likely doesnt have a sleep staging column
+                    early_start = True
+
+            elif i == 19 and early_start == False:
                 try:
                     assert line[:11] == 'Sleep Stage'
                 except:
                     raise Exception("data doesnt appear to start at the correct line")
-            elif i == 20:
+            elif i == 20 and early_start == False:
                 # record the starting epoch time
 
                 #This is if there are 5 columns, including position
@@ -149,8 +158,19 @@ def RemLogic_to_pandas(file_path):
                     raise Exception("number of columns was unexpected")
                 events.append(line.split('\t')[0])
                 time = read_time([rdate, rtime])
-            elif i>20:
+            elif i == 16 and early_start == True:
+                # we've already confirmed the first column has time
+                # or we wouldnt be in this flag
+                rtime = line.rstrip().split('\t')[0]
+                events.append(line.split('\t')[1])
+                time = read_time([rdate, rtime])
+
+            elif i>20 and early_start == False:
                 events.append(line.split('\t')[0])
+            elif i>16 and early_start == True:
+                # take the 2nd item instead of the first, because there is no
+                # sleep stagin column, need to grab the event
+                events.append(line.split('\t')[1])
             else:
                 pass #skips the initial garbage
     return pd.Series(events), time
