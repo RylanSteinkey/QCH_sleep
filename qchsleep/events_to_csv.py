@@ -121,9 +121,16 @@ def RemLogic_to_pandas(file_path):
     """
     Takes a path to a remlogic event export and
     turns it into a pandas series at the correct time
+    !!!DEPRECATED, USED dynamic_RemLogic_to_pandas()!!!
     """
     events = []
-    early_start = False
+    early_start = False # if starting 4 lines early,
+    """
+    note that for the above case, you must start 4 lines early, and the data might
+    have an analysis start after 2 lines, but to match the times you have to do 4 lines,
+    hence why this is hard coded instead of looking for the correct header
+    """
+    late_start = False # if starting 1 line late
     with open(file_path) as file:
         for i, line in enumerate(file):
             # skip the first 19 lines, but record date on line 3
@@ -158,6 +165,7 @@ def RemLogic_to_pandas(file_path):
                     raise Exception("number of columns was unexpected")
                 events.append(line.split('\t')[0])
                 time = read_time([rdate, rtime])
+
             elif i == 16 and early_start == True:
                 # we've already confirmed the first column has time
                 # or we wouldnt be in this flag
@@ -216,6 +224,48 @@ def add_gold_stds(files, usleep, out):
         df.to_excel(writer, sheet_name=date_group)
     writer.save()
 
+def dynamic_RemLogic_to_pandas(file_path):
+    """
+    Too many files have different formats with different rules
+    the above RemLogic function needs more general rules
+
+    Anyways, converts a remlogic events output, in any format,
+    and any amount of columns, into a pandas series. Unlike the other
+    remlogic to pandas function, this finds the line the equivalent gold
+    would start at, and searches for which columns give the Correct
+    event info and time stamps.
+    """
+    events = []
+    start_recording = False
+    with open(file_path) as file:
+        for i, line in enumerate(file):
+            if start_recording == False:
+                if i == 3:
+                    rdate = line.rstrip().split('\t')[-1]
+                elif 'Time [hh:mm:ss]' in line:
+                    start_recording = i
+                else:
+                    pass
+            else:
+                if i == start_recording+1:
+                    if 'Sleep Stage' in line:
+                        method = 'Sleep Stage'
+                    elif 'Event' in line:
+                        method = 'Event'
+                    else:
+                        raise Exception("No column of sleep staging found in file {}".format(file_path))
+
+                    stage_index = line.split('\t').index(method)
+                    time_index = line.split('\t').index('Time [hh:mm:ss]')
+
+                    # only recording the first time
+                    rtime = line.rstrip().split('\t')[time_index]
+                    time = read_time([rdate,rtime])
+                else:
+                    # recording each event, for every line
+                    event  = line.rstrip().split('\t')[stage_index]
+                    events.append(event)
+    return pd.Series(events), time
 
 def main():
     # Primary data aggregation

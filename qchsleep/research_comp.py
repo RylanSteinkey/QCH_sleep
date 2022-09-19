@@ -29,7 +29,7 @@ def scores_to_df(files):
     for file in files:
         file = file[0]
         try:
-            pdseries, time = events_to_csv.RemLogic_to_pandas(file)
+            pdseries, time = events_to_csv.dynamic_RemLogic_to_pandas(file)
         except:
             print("problem is with ",file)
             raise

@@ -100,13 +100,8 @@ def grade(df, date_group):
         rc = rc[[not is_empty(i) for i in rc]]
 
         try:
-            print(len(lc),expected_supports[date_group])
-
-            print('1')
             assert np.all([i==j for i,j in zip(lc.index,rc.index)])
-            print('2')
             assert len(lc)==len(rc)
-            print('3')
             assert len(lc) == expected_supports[date_group]
         except:
             raise Exception("indeces not matching for comparison")
