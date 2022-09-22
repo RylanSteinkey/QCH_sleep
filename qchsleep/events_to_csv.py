@@ -244,27 +244,28 @@ def dynamic_RemLogic_to_pandas(file_path):
                     rdate = line.rstrip().split('\t')[-1]
                 elif 'Time [hh:mm:ss]' in line:
                     start_recording = i
+
+                    if 'Event' in line:
+                        method = 'Event'
+                    elif 'Sleep Stage' in line:
+                        method = 'Sleep Stage'
+                    else:
+                        print(line)
+                        raise Exception("No column of sleep staging found in file {}".format(file_path))
+                    stage_index = line.split('\t').index(method)
+                    time_index = line.split('\t').index('Time [hh:mm:ss]')
+
                 else:
                     pass
             else:
                 if i == start_recording+1:
-                    if 'Sleep Stage' in line:
-                        method = 'Sleep Stage'
-                    elif 'Event' in line:
-                        method = 'Event'
-                    else:
-                        raise Exception("No column of sleep staging found in file {}".format(file_path))
-
-                    stage_index = line.split('\t').index(method)
-                    time_index = line.split('\t').index('Time [hh:mm:ss]')
-
                     # only recording the first time
                     rtime = line.rstrip().split('\t')[time_index]
                     time = read_time([rdate,rtime])
-                else:
-                    # recording each event, for every line
-                    event  = line.rstrip().split('\t')[stage_index]
-                    events.append(event)
+
+                # recording each event, for every line
+                event  = line.rstrip().split('\t')[stage_index]
+                events.append(event)
     return pd.Series(events), time
 
 def main():

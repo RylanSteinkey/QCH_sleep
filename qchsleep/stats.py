@@ -14,7 +14,7 @@ def converter(vals):
     Converts from U-Sleep to Remlogic, or vice versa
     i.e. SLEEP-S1 will become N1, or reverse
     """
-    rem2U = {"SLEEP-S0":'WAKE',"SLEEP-S1":'N1',"SLEEP-S2":'N2',"SLEEP-S3":'N3',"SLEEP-REM":'REM'}
+    rem2U = {"SLEEP-S0":'Wake',"SLEEP-S1":'N1',"SLEEP-S2":'N2',"SLEEP-S3":'N3',"SLEEP-REM":'REM'}
     to_rem = {v:k for k,v in rem2U.items()}
 
     new_vals = []
