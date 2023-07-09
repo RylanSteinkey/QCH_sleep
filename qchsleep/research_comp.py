@@ -53,23 +53,43 @@ def save_predictions(pages, out):
     """
     turns the pages dictionary into an excel sheet
     """
+    fail_next = False
     writer = pd.ExcelWriter(out, engine='xlsxwriter')
     for date_group in date_groups:
-        first_time = ''
+        g, gold_time = pages[date_group]['Gold.txt']
         series_data = pages[date_group]
         max_len = max([len(i[0]) for i in series_data.values()])
         df = pd.DataFrame()
         for researcher in series_data.keys():
             preds, time = series_data[researcher]
-            if time != '': #check to make sure the series all start at the same time
-                first_time = time
-            else:
-                assert time == first_time
 
-            df[researcher] = preds
+            # if preds is shorter than the gold time, we need to pad on unscored.
+            to_add = len(g)-len(preds)
+            preds = list(preds.values)
+            for i in range(to_add):
+                preds.append('SLEEP-UNSCORED')
+
+            # check that the series starts at the same time as the gold
+            if time == gold_time:
+                df[researcher] = preds[:len(g)]
+
+            else:
+                time_diff = gold_time - time
+                epochs_to_shift = round(time_diff.total_seconds() / 30)
+                if epochs_to_shift >= 0:
+                    # researcher started before gold, need to remove first X gradings
+                    df[researcher] = preds[epochs_to_shift:][:len(g)]
+
+                else:
+                    # research started late, need to add a blank, i hope we dont have this though
+                    pads = ['SLEEP-UNSCORED' for i in range(abs(epochs_to_shift))]
+                    new_pred = pads+preds
+                    df[researcher] = new_pred[:len(g)]
+
+
         times = []
         for i in range(max_len):
-            times.append(first_time + datetime.timedelta(0,i*30))
+            times.append(gold_time + datetime.timedelta(0,i*30))
         times = [i.ctime() for i in times]
         df['time_stamp'] = pd.Series(times)
         df = df.set_index('time_stamp')
