@@ -3,7 +3,8 @@ import numpy as np
 import os, sys
 
 from statistics import mode
-from sklearn.metrics import cohen_kappa_score
+from sklearn.metrics import cohen_kappa_score, confusion_matrix
+
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -142,6 +143,59 @@ def print_figs(ck_sum):
     ax.set(xlabel = "Predictor", ylabel="Cohen's Kappa (n=50)")
     plt.show()
 
+def gen_confusion_matrix(sheets, dfs, scorer):
+    """
+    Generates confusion matrices across all 50 studies
+    scorer in ['Trained', 'In Training', 'U-Sleep_F4', 'U-Sleep_C4', 'U-Sleep_O2']
+    """
+    gold = []
+    pred = []
+
+    for sheet in sheets:
+        #print(dfs[sheet])
+        train_status = dfs[sheet][0].values[1]
+        if 'U-Sleep' in scorer:
+            to_keep_cols = [scorer]
+        else:
+            to_keep_cols = [i for i,j in zip(dfs[sheet][0].columns, train_status) if (j==scorer and 'U-Sleep' not in i)]
+        pred_df = dfs[sheet][1]
+        for col in to_keep_cols:
+            for i in pred_df[col]:
+                pred.append(i)
+            for i in pred_df['gold_std']:
+                gold.append(i)
+
+    labels = ['W','N1','N2','N3','R']
+    # (y_true, y_pred)  == (gold, pred)
+    conf_matrix = confusion_matrix(gold, pred, labels = labels)
+
+    # Calculate accuracy percentages
+    cm_percent = conf_matrix / conf_matrix.sum(axis=1)[:, np.newaxis]
+
+    # Plot the confusion matrix using Seaborn or Matplotlib
+    plt.figure(figsize=(6, 4))
+
+    sns.heatmap(conf_matrix, annot=True, fmt="d", cmap='Reds', cbar=False)
+
+    # Add accuracy percentages to the plot
+    for i in range(len(labels)):
+        for j in range(len(labels)):
+            cell_color = conf_matrix[i, j] / np.max(conf_matrix)
+            text_color = 'white' if cell_color > 0.5 else 'black'
+            plt.text(j+0.5, i+0.25, f"{cm_percent[i, j]*100:.2f}%",
+                 ha='center', va='center', color=text_color)
+
+
+    plt.title("Confusion Matrix")
+    plt.xlabel("Predicted by {}".format(scorer))
+    plt.ylabel("Gold Standard")
+
+    plt.xticks(np.arange(len(labels))+0.5, labels)
+    plt.yticks(np.arange(len(labels))+0.5, labels)
+
+    plt.savefig("figures/heatmaps/{}.png".format(scorer))
+    plt.clf()
+
 
 def main():
     sheets, dfs = load_excel("data/QSleep_U-Sleep_Data.xlsx")
@@ -149,7 +203,10 @@ def main():
     dfs = add_gold_stds(sheets, dfs)
     summary_arrays = get_perc_ck_per_class(dfs,sheets)
     sim_sum, ck_sum = acc_by_title(summary_arrays, sheets)
-    print_figs(ck_sum['wake_sleep'])
+    #print_figs(ck_sum['pure'])
+    for scorer in ['Trained', 'In Training', 'U-Sleep_F4', 'U-Sleep_C4', 'U-Sleep_O2']:
+        gen_confusion_matrix(sheets, dfs, scorer)
+
 
     #plot
 
