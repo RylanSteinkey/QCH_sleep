@@ -25,3 +25,33 @@ def test_read_v2_hypnograms():
     assert len(all_events[0]) == 201
     assert len(all_events[1]) == 201
     assert all_events[0][0] == 'Wake'
+
+def test_merge_summs():
+    merge_summs()
+
+def test_merge_heatmaps():
+    merge_heatmaps()
+
+def test_add_v2():
+    files = get_files_list("data/u-sleep2")[0]
+
+    gens = []
+    models = []
+    leads = []
+    edf_names = []
+    for file in files:
+        _, gen,model,lead,edf_name = file.split('/')
+        edf_name = edf_name.split('_-_')[0]
+        gens.append(gen)
+        models.append(model)
+        leads.append(lead)
+        edf_names.append(edf_name)
+
+    data = read_v2_hypnograms(files)
+    print(len(edf_names), len(data))
+    for i, j in zip(edf_names, data):
+        print(i,len(j))
+    sys.exit()
+
+def test_gen_stacked_bars():
+    gen_stacked_bars()

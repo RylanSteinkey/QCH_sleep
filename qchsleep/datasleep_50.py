@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import os, sys
+import math
 
 from statistics import mode
 from sklearn.metrics import cohen_kappa_score, confusion_matrix
@@ -402,6 +403,107 @@ def gen_confusion_matrix(sheets, dfs, scorer):
     plt.savefig("figures/heatmaps/{}.png".format(scorer))
     plt.clf()
 
+def is_valid_type(val):
+    # covers core floats, numpy floating and complex floating
+    if isinstance(val, (float, np.inexact)):
+        if math.isnan(val) or np.isnan(val):
+            return False
+        else:
+            return True
+    # covers core ints, numpy ints (signed unsigned), longs, shorts, bytes
+    # TODO check for bytes later, as they do NOT like math eqns when exponential
+    elif isinstance(val, (int, np.integer)):
+        return True
+    # covers core and np strings, excludes unicode
+    elif isinstance(val, (str, np.str_)):
+        if val.upper() in ['INVALID', 'NAN']:
+            return False
+        else:
+            return True
+    else:
+        return False
+
+def gen_stacked_bars():
+    """
+    Generates a stacked histogram binning accuracies by scorer
+    showing contributions of each scorer type to each bin
+    """
+    #TODO: check and generate pathing if not exist
+    df = pd.read_excel('data/del_test.xlsx', sheet_name = None)
+    sheets = list(df.keys())
+
+
+    # pulling score classes from original document cause its faster
+    status_df = pd.read_excel('data/QSleep_U-Sleep_Data.xlsx', sheet_name = None)
+    status_dict = {}
+    for sheet in sheets:
+        temp_dict = {i:j for i,j in zip(status_df[sheet].columns,status_df[sheet].values[1])}
+        status_dict[sheet] = temp_dict
+
+    trained = []
+    untrained = []
+    #2.0
+    C4 = []
+    F4 = []
+    O2 = []
+
+    # first getting counts
+    for sheet in sheets:
+        psg = df[sheet]
+        psg = psg.drop(columns=[i for i in psg.columns if 'Unnamed' in i])
+        for col in psg.columns:
+            if col =='gold_std':
+                continue
+            # get scorer class
+            isv1 = 0
+            try:
+                if col in list(status_dict[sheet].keys()):
+                    isv1 = 1
+            except:
+                print("Can't search {} through list of columns".format(col))
+                raise
+
+            if isv1:
+                status = status_dict[sheet][col]
+            else:
+                #likely v2, need to check
+                if 'U-Sleep' in col:
+
+                    if col in ['U-Sleep_2.0_F4','U-Sleep_2.0_C4','U-Sleep_2.0_O2']:
+                        status = 'AI'
+                    elif col in ['U-Sleep_2.0_EEG_F4','U-Sleep_2.0_EEG_C4','U-Sleep_2.0_EEG_O2']:
+                        # for now, skip v2 EEG, can add it as its own C4_EEG later if needed
+                        continue
+                    else:
+                        raise Exception("No declared way to determine class of U-Sleep named {}".format(col))
+
+                else:
+                    raise Exception("No declared way to determine class of scorer named {}".format(col))
+
+            # I dont think changing scale to the actual value of seen
+            t_scale = 10
+            ut_scale = 10
+
+            if not is_valid_type(status):
+                continue
+
+            if status == 'Trained':
+                trained.append("a")
+            elif status == 'In Training':
+                untrained.append("a")
+            elif status == 'AI':
+                #WICH AItrained.append("a")
+                continue
+            elif status == "TrainingStatus":
+                continue
+            elif "Majority_Trained" in status or status == 'Sleep':
+                continue
+            else:
+                raise Exception("status {} not recognized".format(status))
+    print(len(trained))
+    print(len(untrained))
+    sys.exit()
+
 
 
 def main():
@@ -432,7 +534,7 @@ def main():
         for sheet in sheets:
             dfs[sheet][1].to_excel(writer, sheet_name=sheet)
     sys.exit()
-    
+
     #print_figs(ck_sum['pure'])
     for scorer in ['Trained', 'In Training', 'U-Sleep_F4', 'U-Sleep_C4', 'U-Sleep_O2', 'All Human Average']:
         gen_confusion_matrix(sheets, dfs, scorer)
