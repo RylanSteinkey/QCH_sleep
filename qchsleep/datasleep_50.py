@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os, sys
 import math
+from collections import Counter
 
 from statistics import mode
 from sklearn.metrics import cohen_kappa_score, confusion_matrix
@@ -423,6 +424,13 @@ def is_valid_type(val):
     else:
         return False
 
+def get_acc(pred, act):
+    """
+    can adjust later to also return ck if needed
+    """
+    correct = [is_equal(l,r,'pure') for l,r in zip(pred,act)]
+    return np.sum(correct)/len(act)*100
+
 def gen_stacked_bars():
     """
     Generates a stacked histogram binning accuracies by scorer
@@ -480,29 +488,96 @@ def gen_stacked_bars():
                 else:
                     raise Exception("No declared way to determine class of scorer named {}".format(col))
 
-            # I dont think changing scale to the actual value of seen
-            t_scale = 10
-            ut_scale = 10
-
             if not is_valid_type(status):
                 continue
 
+            # I dont think changing scale to the actual value of seen
+            t_scale = 15.4 #770/50
+            ut_scale = 4.74 #237/50
+
+            # look at how many trained and untrained scoreres there are
+            # so we know how much to scale each by. note there are no gold
+            # labels in the status dict.
+            counts = Counter(status_dict[sheet].values())
+
+            num_t = counts['Trained']
+            num_ut = counts['In Training']
+
+            acc = get_acc(psg[col], psg['gold_std'])
+
             if status == 'Trained':
-                trained.append("a")
+                scale_r = t_scale/num_t
+                trained.append([acc,scale_r])
             elif status == 'In Training':
-                untrained.append("a")
+                scale_r = ut_scale/num_ut
+                untrained.append([acc,scale_r])
             elif status == 'AI':
-                #WICH AItrained.append("a")
-                continue
+                if 'C4' in col:
+                    C4.append([acc,1])
+                elif 'F4' in col:
+                    F4.append([acc,1])
+                elif 'O2' in col:
+                    O2.append([acc,1])
+                else:
+                    raise Exception("AI EEG lead {} not recognized".format(col))
             elif status == "TrainingStatus":
                 continue
             elif "Majority_Trained" in status or status == 'Sleep':
                 continue
             else:
                 raise Exception("status {} not recognized".format(status))
-    print(len(trained))
-    print(len(untrained))
+
+    # we now have all 5 lists, need to scale them and load into 2 seperate figures
+    # one for u ut, one for c4 f4 o2
+    bdf = pd.DataFrame()
+    #unweighted
+    #bdf['Training Status'] = ['Trained' for i in trained] + ['In Training' for i in untrained]
+    #bdf['Percent Similarity'] = [i[0] for i in trained] + [i[0] for i in untrained]
+
+    #bdf['EEG Lead'] = ['F4' for i in F4] + ['C4' for i in C4] + ['O2' for i in O2]
+    #bdf['Percent Similarity'] = [i[0] for i in F4] + [i[0] for i in C4] + [i[0] for i in O2]
+
+    #weighted
+    ts = []
+    ps = []
+    for i in trained:
+        for j in range(round(100*i[1])):
+            ts.append('Trained')
+            ps.append(i[0])
+    for i in untrained:
+        for j in range(round(100*i[1])):
+            ts.append('In Training')
+            ps.append(i[0])
+    bdf['Training Status'] = ts
+    bdf['Percent Similarity'] = ps
+
+    import seaborn.objects as so
+
+
+    #so.Plot(bdf, x = 'Percent Similarity',alpha='Training Status').add(so.Bars(),so.Hist(binwidth=5), so.Stack()).show()
+    img = so.Plot(bdf, x = 'Percent Similarity',alpha='Training Status').add(so.Bars(),so.Hist(binwidth=5), so.Stack())
+    #https://matplotlib.org/stable/users/explain/customizing.html
+    #img.theme({'legend.loc': 'upper left'})
+
+    img.show()
+    #img.save('data/stack_test.png')
+
     sys.exit()
+
+
+    """
+    bins = pd.cut(bdf['Percent Similarity'], bins=range(0,101,10), right=False)
+    tb = pd.crosstab(bins, bdf['Training Status'])
+
+    plt.figure(figsize=(10, 6))
+    sns.set(style="whitegrid")
+    sns.barplot(data=tb, x=tb.index, y=['Trained','In Training'], palette='coolwarm')
+
+    plt.show()
+    """
+
+
+
 
 
 
