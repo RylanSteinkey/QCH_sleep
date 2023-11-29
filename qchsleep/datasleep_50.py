@@ -91,7 +91,8 @@ def get_perc_ck_per_class(dfs,sheets):
                 #compare column to gold std, get %sim and ck
 
                 col = dfs[sheet][1][col_name]
-                perc = np.sum([i==j for i,j in zip(col,gold_stds)])/len(gold_stds)
+                #perc = np.sum([i==j for i,j in zip(col,gold_stds)])/len(gold_stds)
+                perc = np.sum([is_equal(i,j,rule) for i,j in zip(col,gold_stds)])/len(gold_stds)
 
                 #ck_fake_left = [is_equal(i,j,rule) for i,j in zip(col,gold_stds)]
                 #ck = cohen_kappa_score(ck_fake_left,[True for i in ck_fake_left]) #might not be quite accurate, using below method instead
@@ -388,7 +389,8 @@ def gen_confusion_matrix(sheets, dfs, scorer):
         for j in range(len(labels)):
             cell_color = conf_matrix[i, j] / np.max(conf_matrix)
             text_color = 'white' if cell_color > 0.5 else 'black'
-            plt.text(j+0.5, i+0.25, f"{cm_percent[i, j]*100:.2f}%",
+            #f"{cm_percent[i, j]*100:.2f}%"
+            plt.text(j+0.5, i+0.25, "{:.2%}".format(cm_percent[i, j]),
                  ha='center', va='center', color=text_color)
 
 
@@ -605,10 +607,12 @@ def main():
 
     #print(dfs)
     #test dfs
+    """
     with pd.ExcelWriter('data/del_test.xlsx') as writer:
         for sheet in sheets:
             dfs[sheet][1].to_excel(writer, sheet_name=sheet)
     sys.exit()
+
 
     #print_figs(ck_sum['pure'])
     for scorer in ['Trained', 'In Training', 'U-Sleep_F4', 'U-Sleep_C4', 'U-Sleep_O2', 'All Human Average']:
@@ -616,6 +620,7 @@ def main():
     for lead in ['C4','F4','O2']:
         for model in ['2.0_EEG_','2.0_']:
             gen_confusion_matrix(sheets, dfs, "U-Sleep_"+model+lead)
+    """
 
     merge_summs()
 
